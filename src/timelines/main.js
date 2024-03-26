@@ -1,14 +1,22 @@
 import { config } from "../config/main";
 import { cameraEnd, cameraStart } from "../trials/camera";
-import { createHoneycombTimeline } from "./honeycombTimeline";
+//import { createHoneycombTimeline } from "./honeycombTimeline";
+import { buildPRPDtimeline } from "../prpd_experiment";
 
 /**
  * Experiment-wide settings for jsPsych: https://www.jspsych.org/7.3/overview/experiment-options/
  * Note that Honeycomb combines these with other options required for Honeycomb to operate correctly
  */
 const jsPsychOptions = {
-  on_trial_finish: (data) => console.log(`Trial ${data.internal_node_id} just finished:`, data),
-};
+  on_finish: function (data) {
+    console.log("The experiment has finished:", data);
+    // Reload the page for another run-through of the experiment
+    window.location.reload();
+  },
+  };
+
+
+
 
 /**
  * Builds the experiment's timeline that jsPsych will run
@@ -20,14 +28,8 @@ const jsPsychOptions = {
  */
 function buildTimeline(jsPsych, studyID, participantID) {
   console.log(`Building timeline for participant ${participantID} on study ${studyID}`);
-  const timeline = createHoneycombTimeline(jsPsych);
-
-  // Dynamically adds the camera trials to the experiment if config.USE_CAMERA
-  if (config.USE_CAMERA) {
-    timeline.unshift(cameraStart(jsPsych)); // Add cameraStart as the first trial
-    timeline.push(cameraEnd(5000)); // Add cameraEnd as the last trial
-  }
-
+  //const timeline = createHoneycombTimeline(jsPsych);
+  const timeline = buildPRPDtimeline(jsPsych, studyID, participantID);
   return timeline;
 }
 

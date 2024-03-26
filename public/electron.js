@@ -8,7 +8,7 @@ const fs = require("fs-extra");
 const log = require("electron-log");
 
 // Event Trigger
-const { getPort, sendToPort } = require("event-marker");
+//const { getPort, sendToPort } = require("event-marker");
 const { eventCodes, vendorId, productId, comName } = require("./config/trigger");
 
 // handle windows installer set up
@@ -82,78 +82,80 @@ let portAvailable;
 let SKIP_SENDING_DEV = false;
 
 const setUpPort = async () => {
-  let p;
-  if (activeProductId) {
-    p = await getPort(vendorId, activeProductId);
-  } else {
-    p = await getPort(activeComName);
-  }
-  if (p) {
-    triggerPort = p;
-    portAvailable = true;
+  throw new Error("event marker has been disabled.")
+  // let p;
+  // if (activeProductId) {
+  //   p = await getPort(vendorId, activeProductId);
+  // } else {
+  //   p = await getPort(activeComName);
+  // }
+  // if (p) {
+  //   triggerPort = p;
+  //   portAvailable = true;
 
-    triggerPort.on("error", (err) => {
-      log.error(err);
-      const buttons = ["OK"];
-      if (process.env.ELECTRON_START_URL) {
-        buttons.push("Continue Anyway");
-      }
-      dialog
-        .showMessageBox(mainWindow, {
-          type: "error",
-          message: "Error communicating with event marker.",
-          title: "Task Error",
-          buttons,
-          defaultId: 0,
-        })
-        .then((opt) => {
-          if (opt.response === 0) {
-            app.exit();
-          } else {
-            SKIP_SENDING_DEV = true;
-            portAvailable = false;
-            triggerPort = false;
-          }
-        });
-    });
-  } else {
-    triggerPort = false;
-    portAvailable = false;
-  }
+  //   triggerPort.on("error", (err) => {
+  //     log.error(err);
+  //     const buttons = ["OK"];
+  //     if (process.env.ELECTRON_START_URL) {
+  //       buttons.push("Continue Anyway");
+  //     }
+  //     dialog
+  //       .showMessageBox(mainWindow, {
+  //         type: "error",
+  //         message: "Error communicating with event marker.",
+  //         title: "Task Error",
+  //         buttons,
+  //         defaultId: 0,
+  //       })
+  //       .then((opt) => {
+  //         if (opt.response === 0) {
+  //           app.exit();
+  //         } else {
+  //           SKIP_SENDING_DEV = true;
+  //           portAvailable = false;
+  //           triggerPort = false;
+  //         }
+  //       });
+  //   });
+  // } else {
+  //   triggerPort = false;
+  //   portAvailable = false;
+  // }
 };
 
 const handleEventSend = (code) => {
-  if (!portAvailable && !SKIP_SENDING_DEV) {
-    const message = "Event Marker not connected";
-    log.warn(message);
+  throw new Error("event marker has been disabled.")
+  // if (!portAvailable && !SKIP_SENDING_DEV) {
+  //   const message = "Event Marker not connected";
+  //   log.warn(message);
 
-    const buttons = ["Quit", "Retry"];
-    if (process.env.ELECTRON_START_URL) {
-      buttons.push("Continue Anyway");
-    }
-    dialog
-      .showMessageBox(mainWindow, {
-        type: "error",
-        message,
-        title: "Task Error",
-        buttons,
-        defaultId: 0,
-      })
-      .then((resp) => {
-        const opt = resp.response;
-        if (opt === 0) {
-          // quit
-          app.exit();
-        } else if (opt === 1) {
-          // retry
-          setUpPort().then(() => handleEventSend(code));
-        } else if (opt === 2) {
-          SKIP_SENDING_DEV = true;
-        }
-      });
-  } else if (!SKIP_SENDING_DEV) {
-    sendToPort(triggerPort, code);
-  }
+  //   const buttons = ["Quit", "Retry"];
+  //   if (process.env.ELECTRON_START_URL) {
+  //     buttons.push("Continue Anyway");
+  //   }
+  //   dialog
+  //     .showMessageBox(mainWindow, {
+  //       type: "error",
+  //       message,
+  //       title: "Task Error",
+  //       buttons,
+  //       defaultId: 0,
+  //     })
+  //     .then((resp) => {
+  //       const opt = resp.response;
+  //       if (opt === 0) {
+  //         // quit
+  //         app.exit();
+  //       } else if (opt === 1) {
+  //         // retry
+  //         setUpPort().then(() => handleEventSend(code));
+  //       } else if (opt === 2) {
+  //         SKIP_SENDING_DEV = true;
+  //       }
+  //     });
+  // } else if (!SKIP_SENDING_DEV) {
+  //   sendToPort(triggerPort, code);
+  // }
 };
 
 // Update env variables with buildtime values from frontend
