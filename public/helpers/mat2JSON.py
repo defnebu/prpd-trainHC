@@ -1,7 +1,5 @@
 
-## convert experiment params in .mats to JSON for online experiment.
-
-## jsons's don't take NaN- they need to be converted to null. 
+## convert experiment params in .mats to JSON for online experiment. 
 
 import numpy as np
 import scipy.io
@@ -9,26 +7,25 @@ import json
 import os
 
 
-def nan2null(obj):
+def nan2null(obj):  ## jsons's don't take NaN- they need to be converted to null.
+    '''
+    recursively check for NaNs in dictionary values and turn them into nulls. 
+    otherwise can't load JSONS.
+    
+    '''
     if isinstance(obj, np.ndarray):
         if obj.dtype == float:
             return [nan2null(x) for x in obj.tolist()]
         else:
-            # Convert non-float arrays directly to a list
             return obj.tolist()
-    # Handle lists by applying nan2null recursively
     elif isinstance(obj, list):
         return [nan2null(item) for item in obj]
-    # Handle dictionaries by applying nan2null recursively
     elif isinstance(obj, dict):
         return {key: nan2null(value) for key, value in obj.items()}
-    # Check and convert individual NaNs to None
     elif isinstance(obj, float) and np.isnan(obj):
         return None
     else:
         return obj
-    
-
     
 
 def mat2JSON(mat_path, json_path):
@@ -65,14 +62,14 @@ def mat2JSON(mat_path, json_path):
             "taskMap": subj_params['taskMap']
         }
     
-    # train1_dict = {
-    #         "trial_iti": train1_params['trial_iti'].tolist(),  # Convert numpy array to list
-    #         "blockSequence": train1_params['blockSequence'].tolist()[0],  # Extract single value
-    #         "singleTrialSequences": train1_params['singleTrialSequences'].tolist(), #list of list
-    #         "taskOrder": train1_params['taskOrder'].tolist(),
-    #         "singleTaskSequences": train1_params['singleTaskSequences'].tolist(),
-    #         "soaSequences": train1_params['soaSequences'].tolist()
-    #     }
+    train1_dict = {
+            "trial_iti": train1_params['trial_iti'],  
+            "blockSequence": train1_params['blockSequence'],  
+            "singleTrialSequences": train1_params['singleTrialSequences'], 
+            "taskOrder": train1_params['taskOrder'],
+            "singleTaskSequences": train1_params['singleTaskSequences'],
+            "soaSequences": train1_params['soaSequences']
+        }
     
     with open(os.path.join(json_path, 'sub2_param2.json'), 'w') as json_file:
          json.dump(subj_param_dict, json_file, indent=4)

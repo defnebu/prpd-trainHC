@@ -4,34 +4,15 @@ import jsPsychImageKeyboardResponse from "@jspsych/plugin-image-keyboard-respons
 import jsPsychHtmlKeyboardResponse  from "@jspsych/plugin-html-keyboard-response";
 import jsPsychPreload from "@jspsych/plugin-preload";
 
-
-// helper functions for loading params 
-function fetchJSON(callback) {
-    fetch('assets/sub2_param2.json')
-        .then(response => response.json())
-        .then(data => {
-            callback(data); // Call the callback function with the fetched data
-        })
-        .catch(error => {
-            console.log('Error loading JSON file:', error);
-        });
-}
-
-
-
-
-
-// load experiment params
+let subjectParams;
+let trainingParams;
+// load and parse experiment params
 
 fetch('assets/sub2_param2.json')
 .then(response => response.json()) // Parse the JSON string into an object
   .then(data => {
-      const correctResponseMap = data.correctResponseMap;
-      var counterBalanceCode = data.counterBalanceCode;
-      const respTypeMap = data.respTypeMap;
-      const taskMap = data.taskMap; 
-        //checkt to see if it's loaded.
-      //console.log('Counter Balance Code:', counterBalanceCode);
+      subjectParams = data;
+      
     })
     .catch(error => {
         console.log('Error loading JSON file:', error);
