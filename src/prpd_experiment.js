@@ -4,20 +4,29 @@ import jsPsychImageKeyboardResponse from "@jspsych/plugin-image-keyboard-respons
 import jsPsychHtmlKeyboardResponse  from "@jspsych/plugin-html-keyboard-response";
 import jsPsychPreload from "@jspsych/plugin-preload";
 
-let subjectParams;
-let trainingParams;
-// load and parse experiment params
+///////////////////////////////////// all helper functions go here /////////////////////////////////////
+// getting subject params
+    function loadJSON(url) {
+            return fetch(url).then(response => response.json());
+          }
+    
+    function loadExperimentParams() {
+        Promise.all([loadJSON('assets/subj_params/sub1_param.json'), loadJSON('assets/train_params/sub1_train1.json')])
+        .then(([config1, config2]) => {
+        const experimentParams = {...config1, ...config2};
+        startExperiment(experimentParams);
+        })
+        .catch(error => console.error("Failed to load param files:", error));
+        }
 
-fetch('assets/sub2_param2.json')
-.then(response => response.json()) // Parse the JSON string into an object
-  .then(data => {
-      subjectParams = data;
-      
-    })
-    .catch(error => {
-        console.log('Error loading JSON file:', error);
-      });
+// matrix algebra        
 
+// initialize main experiment function
+    
+    function startExperiment(params) {
+          }
+          
+ 
 
 
 
@@ -38,9 +47,6 @@ var Stims = Stimnames.map(Stimnames => Stimpath + Stimnames)
 var preload = {
   type: jsPsychPreload,
   images: Stims
-//   images:['assets/Slide1.png',
-//   'assets/Slide2.png', 
-//   'assets/Slide3.png'],
 };
 
 
@@ -50,9 +56,6 @@ var style = document.createElement('style');
 //style.type = 'text/css';
 style.innerHTML = `.black-background { background-color: black !important; }`;
 document.head.appendChild(style);
-
-
-// helper functions 
 
 
 
