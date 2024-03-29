@@ -3,65 +3,114 @@
 import jsPsychImageKeyboardResponse from "@jspsych/plugin-image-keyboard-response";
 import jsPsychHtmlKeyboardResponse  from "@jspsych/plugin-html-keyboard-response";
 import jsPsychPreload from "@jspsych/plugin-preload";
+import { defaultsDeep } from "lodash";
 
-///////////////////////////////////// all helper functions go here /////////////////////////////////////
-// getting subject params
-    function loadJSON(url) {
-            return fetch(url).then(response => response.json());
-          }
-    
-    function loadExperimentParams() {
-        Promise.all([loadJSON('assets/subj_params/sub1_param.json'), loadJSON('assets/train_params/sub1_train1.json')])
-        .then(([config1, config2]) => {
-        const experimentParams = {...config1, ...config2};
-        startExperiment(experimentParams);
-        })
-        .catch(error => console.error("Failed to load param files:", error));
-        }
+// initialize and load subject params
+let counterBalanceCode, taskMap, correctResponseMap, respTypeMap;
+fetch('assets/subj_params/sub1_param.json')
+  .then(response => {
+    if(!response.ok) {
+      console.log("uh oh, subject params didn't load as expected");
+    }
+      return response.json();
+  })
+  .then(data => {
+    counterBalanceCode = data.counterBalanceCode;
+    taskMap = data.taskMap;
+    correctResponseMap = data.correctResponseMap;
+    respTypeMap = data.respTypeMap;
+  })
+  .catch(error => {
+    console.errpr("problem with fetch API for subject parameters", error)
+  });
 
-// matrix algebra        
+  // initialize and load training parameters
+var trial_iti = 0.3; // fixed for trianing
+let blockSequence, singleTrialSequences, singleTaskSequences, taskOrder, soaSequences; 
+fetch('assets/train_params/sub1_train1.json')
+  .then(response => {
+    if(!response.ok) {
+      console.log("uh oh, training params didn't load as expected");
+    }
+      return response.json();
+  })
+  .then(data => {
+    blockSequence = data.blockSequence;
+    singleTrialSequences = data.singleTrialSequences;
+    singleTaskSequences = data.singleTaskSequences;
+    taskOrder = data.taskOrder;
+    soaSequences = data.soaSequences;
+  })
+  .catch(error => {
+    console.error("problem with fetch API for training", error)
+  });
+  
 
-// initialize main experiment function
-    
-    function startExperiment(params) {
-          }
-          
- 
+// preload instructino screens and stimuli
+var Stimpath = 'assets/stimuli/';
+var StimNames = ['Stim1.png', 'Stim2.png','Stim3.png', 'Stim4.png','Stim5.png', 'Stim6.png',
+                'Stim7.png', 'Stim8.png','Stim9.png', 'Stim10.png','Stim11.png', 'Stim12.png',
+                'Stim13.png', 'Stim14.png','Stim15.png', 'Stim16.png',]
+var Stims = StimNames.map(StimNames => Stimpath + StimNames)
 
-
-
-var Stimpath = 'assets/';
-var Stimnames = ['Slide1.png', 'Slide2.png']
-var Stims = Stimnames.map(Stimnames => Stimpath + Stimnames)
-// ,'Stim4.png', 'Stim5.png', 'Stim6.png',
-// 'Stim7.png', 'Stim8.png', 'Stim9.png',
-// 'Slide01.png','Slide02.png','Slide03.png',
-// 'Slide04.png','Slide05.png','Slide06.png',
-// 'Slide07.png','Slide08.png','Slide09.png',
-// 'Slide10.png','Slide11.png'];
-
-
-
-// prelod stimuli 
-
-var preload = {
+var Instrpath = 'assets/instructions/';
+var InstrNames = ['Slide1.png', 'Slide2.png', 'Slide3.png',
+                  'Slide4.png', 'Slide5.png', 'Slide6.png',
+                  'Slide7.png','Slide8.png','Slide9.png',
+                  'Slide10.png','Slide11.png'];
+var Instr = InstrNames.map(InstrNames => Instrpath + InstrNames)
+var preloadStims = {
   type: jsPsychPreload,
   images: Stims
 };
-
+var preloadInstr = {
+  type: jsPsychPreload,
+  images: Instr
+};
 
 // styling with CSS 
-
 var style = document.createElement('style');
 //style.type = 'text/css';
 style.innerHTML = `.black-background { background-color: black !important; }`;
 document.head.appendChild(style);
-
-
-
-
-// Directly set the background to black at the start of the experiment
 document.body.classList.add('black-background');
+
+
+// basic experiment params
+var nTrials = 64 //singleTrialSequences[2].length; 
+var nBlock = 12; 
+var count = 1; //Keys = 
+//let blockType = blockSequence[blockNumber-1];
+// // each block takes in it's instr, then introduce 64 trials.
+// function createExperimentBlock(blockNumber) {
+//   let timeline1 = [];
+  
+//   let InstructionSlide = Instr[blockType];
+//   let instruction = {
+//       type: "html-keyboard-response",
+//       stimulus: '<img src="' + InstructionSlide + '">',
+//       choices: jsPsych.ALL_KEYS,
+//       trial_duration: 2000, // modify so that no keys for 4 seconds and then all keys
+//   };
+//   timeline1.push(instruction);
+// }
+
+//   // Waiting for key press to continue, then starting the trial
+//   let currStim = singleTrialSequences(blockNumber,)
+//   let trial = {
+//       type: "html-keyboard-response",
+//       stimulus: "<p>Trial for block type " + blockType + ".<br>Press any key to continue.</p>",
+//       on_start: function() {
+//           // Wait for 2 seconds before showing this trial
+//           return new Promise(resolve => setTimeout(resolve, 2000));
+//       }
+//   };
+//   timeline1.push(trial);
+
+//   return timeline1;
+
+//var block = 1;
+var currentStim  = singleTrialSequences[0];
 
 
 // Trial to display the welcome message after a key press
@@ -75,7 +124,6 @@ var welcomeMessageTrial = {
     document.body.style.backgroundColor = ''; // Reset the background color after the trial
   }
 };
-
 
 // fixation trial
 var fixation = {
@@ -125,30 +173,13 @@ var DisplaySingleStim2 = {
   };
   
 
-
-
-var combinedTrial = {
-  type: jsPsychHtmlKeyboardResponse,
-  stimulus: function() {
-    var slideNumber = getRandomSlideNumber(); // Ensure this function returns a random number for the slide
-    // Combine the image and symbols in one HTML string
-    var html = '<div style="text-align: center; color: white;">' +
-               '<img src="Stim' + slideNumber + '.png" style="margin-bottom: 20px;"><br>' +
-               '$&nbsp;&nbsp;&nbsp;&nbsp;%</div>';
-    return html;
-  },
-  choices: "ALL_KEYS",
-  response_ends_trial: true
-};
-
-
-// Create a timeline and add the trials
-//var timeline = [welcomeMessageTrial,instructionTrial, DisplaySingleStim, combinedTrial];
-
 // Start the experiment
 //jsPsych.run(timeline);
 export function buildPRPDtimeline(jsPsych, studyID, participantID) {
     console.log("build prpd timeline");
+    console.log(currentStim)
     var timeline = [welcomeMessageTrial,fixation, instructionTrial, DisplaySingleStim2];
     return timeline;
 }
+
+
